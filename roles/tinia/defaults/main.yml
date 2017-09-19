@@ -1,0 +1,20 @@
+---
+
+tinia_libjpeg_turbo_deb: "libjpeg-turbo-official_1.5.2_amd64.deb"
+
+tinia_deb: "tinia-0.3.0-Linux.deb"
+
+tinia_packages:
+ - libxml2-dev
+ - libglew1.6-dev
+ - libglm-dev
+ - libqt4-dev
+ - libapr1-dev
+ - cmake
+ - libboost-all-dev
+ - apache2
+ - apache2-dev
+ - build-essential
+ - git
+ - xinit
+ - x11-xserver-utils

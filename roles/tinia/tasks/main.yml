@@ -1,0 +1,132 @@
+---
+
+- name: Test Architecture
+  assert:
+    that:
+      - "ansible_architecture == 'x86_64'"
+    msg: "Architecture must be x86_64."
+
+- name: Test Distribution
+  assert:
+    that:
+      - "ansible_distribution == 'Ubuntu'"
+    msg: "Distribution must be Ubuntu."
+
+#- name: Test Distribution Release
+#  assert:
+#    that:
+#      - "ansible_distribution_release == 'precise'"
+#    msg: "Distribution must be Ubuntu Precise."
+
+- name: Include hostname.yml
+  include: hostname.yml
+
+- name: Install Tinia packages
+  apt: 
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items: "{{ tinia_packages }}"
+
+- name: Copy libjpeg-turbo deb
+  copy:
+    src: "{{ tinia_libjpeg_turbo_deb }}"
+    dest: "/tmp/{{ tinia_libjpeg_turbo_deb }}"
+
+- name: Install libjpeg-turbo deb package
+  apt:
+    deb: "/tmp/{{ tinia_libjpeg_turbo_deb }}"
+
+
+#FIXME: add reference to specific git commit
+- name: Clone tinia github repository
+  git:
+    repo: http://github.com/sintefmath/tinia.git
+    dest: /home/ubuntu/tinia
+
+- name: Create build directory
+  file:
+    path: "/home/ubuntu/tinia/build"
+    state: directory
+
+- name: Execute cmake
+  command: "cmake .."
+  args:
+    chdir: "/home/ubuntu/tinia/build"
+    creates: "/home/ubuntu/tinia/build/TiniaTargets.cmake"
+
+- name: Execute make
+  command: "make -j9"
+  args:
+    chdir: "/home/ubuntu/tinia/build"
+    creates: "/home/ubuntu/tinia/build/tutorials/tutorial2/tutorial2_desktop"
+
+- name: Copy libturbojpeg.conf
+  copy:
+    src: "libturbojpeg.conf"
+    dest: "/etc/ld.so.conf.d/libturbojpeg.conf"
+  notify: Execute ldconfig
+
+- meta: flush_handlers
+
+- name: Make tinia deb package
+  command: "make package"
+  args:
+    chdir: "/home/ubuntu/tinia/build"
+    creates: "/home/ubuntu/tinia/build/{{ tinia_deb }}"
+
+- name: Install tinia deb package
+  apt:
+    deb: "/home/ubuntu/tinia/build/{{ tinia_deb }}"
+
+- name: Edit /etc/X11/Xwrapper.config 
+  lineinfile:
+    dest: "/etc/X11/Xwrapper.config"
+    regexp: 'allowed_users=*'
+    line: "allowed_users=anybody"
+    state: present
+
+- name: Create /etc/X0.hosts
+  file:
+    path: "/etc/X0.hosts"
+    state: touch
+
+- name: Edit /etc/X0.hosts 
+  lineinfile:
+    dest: "/etc/X0.hosts"
+    regexp: '^LOCAL:'
+    line: "LOCAL:"
+    state: present
+
+- name: Create /etc/X1.hosts
+  file:
+    path: "/etc/X1.hosts"
+    state: touch
+
+- name: Edit /etc/X1.hosts 
+  lineinfile:
+    dest: "/etc/X1.hosts"
+    regexp: '^LOCAL:'
+    line: "LOCAL:"
+    state: present
+
+- name: Copy xorg.conf
+  copy:
+    src: "xorg.conf"
+    dest: "/etc/X11/xorg.conf"
+
+- name: Copy getdisplay.sh
+  copy:
+    src: "getdisplay.sh"
+    dest: "/usr/local/bin/getdisplay.sh"
+    mode: 0755
+
+- name: Start X
+  shell: "/usr/local/bin/getdisplay.sh"
+  async: 45
+  poll: 0
+
+
+
+
+

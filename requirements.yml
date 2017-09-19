@@ -1,0 +1,4 @@
+- name: tinia
+  src: Smartbrood.tinia-ansible-role
+
+
