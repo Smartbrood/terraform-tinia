@@ -1,2 +1,2 @@
 [tinia_servers]
-tinia ansible_host=34.204.203.171 ansible_connection=ssh ansible_ssh_user=ubuntu
+tinia ansible_host=54.197.5.206 ansible_connection=ssh ansible_ssh_user=ubuntu

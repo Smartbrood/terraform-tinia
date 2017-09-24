@@ -27,10 +27,16 @@ resource "aws_key_pair" "terraform-auth" {
 
 resource "aws_vpc" "terraform" {
   cidr_block = "10.0.0.0/16"
+  tags {
+    Name = "tinia"
+  }
 }
 
 resource "aws_internet_gateway" "terraform" {
   vpc_id = "${aws_vpc.terraform.id}"
+  tags {
+    Name = "tinia"
+  }
 }
 
 resource "aws_route" "terraform_internet_access" {
@@ -43,6 +49,9 @@ resource "aws_subnet" "terraform-tinia" {
   vpc_id                  = "${aws_vpc.terraform.id}"
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
+  tags {
+    Name = "tinia"
+  }
 }
 
 resource "aws_security_group" "terraform-allow-ssh-http" {
@@ -69,6 +78,10 @@ resource "aws_security_group" "terraform-allow-ssh-http" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "tinia"
   }
 }
 
